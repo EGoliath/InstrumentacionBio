@@ -1,0 +1,75 @@
+#include <Adafruit_SSD1306.h> 
+#include <Adafruit_GFX.h> 
+Adafruit_SSD1306 display(128, 64); 
+unsigned long T1;
+unsigned long T2;
+int M=0;
+int m1=0;
+int m2=0;
+float voltaje2=0;
+float tdif;
+float valorAnalogico = 0;
+float voltaje = 0;
+float graficaVoltaje = 0;
+int x[128]; 
+int y[128]; 
+void setup(){                
+  Serial.begin(9600);
+  delay(100); 
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.setRotation(0);
+  display.dim(true); 
+  display.setTextColor(WHITE);
+  display.setTextSize(1);  
+  for(int i=127;i>=0;i--){
+    x[i]=9999;
+  }
+  for(int i=127;i>=0;i--){
+    y[i]=9999;
+  }
+} 
+
+void loop(){
+
+  display.clearDisplay(); 
+  display.setCursor(0, 0); 
+  display.print(F("5V")); 
+  display.setCursor(0, 11);   
+  display.print(F("4V"));
+  display.setCursor(0, 22); 
+  display.print(F("3V"));
+  display.setCursor(0, 32);  
+  display.print(F("2V"));      
+  display.setCursor(0, 43); 
+  display.print(F("1V")); 
+  display.drawLine(0, 53, 127, 53, WHITE);
+  display.drawLine(15, 53, 15, 0, WHITE);
+  voltaje=(analogRead(A0)*5)/1024;
+  voltaje2=(analogRead(A1)*5)/1024;
+  graficaVoltaje=map(analogRead(A0),0,1023,53,0); 
+  x[127]=graficaVoltaje; 
+  for(int i=127;i>=15;i--){ 
+      display.drawLine(i-1, x[i-1],i,x[i], WHITE); 
+      y[i-1]=x[i];
+    }  
+  if ((voltaje2 < 1) and (M==1)){
+    m1=1;
+    }
+  if ((voltaje2 > 1) and (m1==1)){
+    tdif= millis()-T1;
+    M=0;
+    m1=0;
+    }
+   if ((voltaje2 > 1) and (M==0)){
+    T1=millis();
+    M=1;
+    }
+  display.print(60/(tdif/1000));
+  display.print(F("LpM"));
+  display.display(); 
+  for(int i=127;i>=0;i--){
+    x[i]=y[i]; 
+  }
+  Serial.println(analogRead(A0));
+  
+}
